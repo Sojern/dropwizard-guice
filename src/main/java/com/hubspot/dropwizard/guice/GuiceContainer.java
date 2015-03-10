@@ -17,11 +17,14 @@ import com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory;
 import com.sun.jersey.spi.container.WebApplication;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 import com.sun.jersey.spi.container.servlet.WebConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class GuiceContainer extends ServletContainer {
     
     private static final long serialVersionUID = 1931878850157940335L;
+  final Logger logger = LoggerFactory.getLogger(GuiceContainer.class);
 
     @Inject
     private Injector injector;
@@ -64,11 +67,16 @@ public class GuiceContainer extends ServletContainer {
     	return resourceConfig;
     }
 
-    @Override
-    protected void initiate(ResourceConfig config, WebApplication webapp) {
-        this.webapp = webapp;
-        webapp.initiate(config, new ServletGuiceComponentProviderFactory(config, injector));
+  @Override
+  protected void initiate(ResourceConfig config, WebApplication webapp) {
+    try {
+      this.webapp = webapp;
+      webapp.initiate(config, new ServletGuiceComponentProviderFactory(config, injector));
+    } catch (final Exception e) {
+      logger.error("Failed to initiate servlet", e);
+      System.exit(-1);
     }
+  }
 
     public WebApplication getWebApplication() {
         return webapp;
